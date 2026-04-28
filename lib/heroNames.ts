@@ -131,7 +131,9 @@ const ZH_NAMES: Record<string, string> = {
 };
 
 export function getHeroDisplayName(hero: Hero, lang: Language): string {
-  if (lang === 'en') return hero.localized_name;
-  const key = hero.name.replace('npc_dota_hero_', '');
-  return ZH_NAMES[key] ?? hero.localized_name;
+  if (lang === 'zh') {
+    const key = hero.name.replace('npc_dota_hero_', '');
+    return ZH_NAMES[key] ?? hero.localized_name;
+  }
+  return hero.localized_name;
 }
