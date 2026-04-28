@@ -5,6 +5,7 @@ import { Hero, Team } from '@/lib/types';
 import { Language, ls } from '@/lib/i18n';
 import { buildPickRecommendations, buildBanRecommendations } from '@/lib/scoreEngine';
 import { useDraftStore } from '@/store/draftStore';
+import { getHeroDisplayName } from '@/lib/heroNames';
 import HeroCard from './HeroCard';
 import clsx from 'clsx';
 
@@ -143,9 +144,9 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
               className="flex items-center gap-2 p-1.5 rounded border cursor-pointer transition-all duration-150 bg-gray-900/60 border-gray-800 hover:border-blue-800/50 hover:bg-gray-800/60"
             >
               <span className="text-[10px] text-gray-600 w-3 text-right font-mono">{idx + 1}</span>
-              <HeroCard hero={hero} size="sm" lang={lang} />
+              <HeroCard hero={hero} displayName={getHeroDisplayName(hero, lang)} size="sm" lang={lang} />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-gray-200 truncate">{hero.localized_name}</div>
+                <div className="text-xs font-semibold text-gray-200 truncate">{getHeroDisplayName(hero, lang)}</div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   {analysis.proWinRate > 0 && (
                     <WRBadge value={analysis.proWinRate} label={ls(lang, '职业', 'Pro', 'Pro')} />
@@ -182,9 +183,9 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
               className="flex items-center gap-2 p-1.5 rounded border cursor-pointer transition-all duration-150 bg-gray-900/60 border-gray-800 hover:border-red-900/50 hover:bg-gray-800/60"
             >
               <span className="text-[10px] text-gray-600 w-3 text-right font-mono">{idx + 1}</span>
-              <HeroCard hero={hero} size="sm" lang={lang} />
+              <HeroCard hero={hero} displayName={getHeroDisplayName(hero, lang)} size="sm" lang={lang} />
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-gray-200 truncate">{hero.localized_name}</div>
+                <div className="text-xs font-semibold text-gray-200 truncate">{getHeroDisplayName(hero, lang)}</div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <WRBadge value={analysis.heroStrength} label={ls(lang, '实力', 'Styr', 'Str')} />
                   {analysis.proBanRate > 0 && (

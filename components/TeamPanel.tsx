@@ -2,6 +2,7 @@
 
 import { Hero, Team } from '@/lib/types';
 import { Language, createTranslator, ls } from '@/lib/i18n';
+import { getHeroDisplayName } from '@/lib/heroNames';
 import HeroCard from './HeroCard';
 import clsx from 'clsx';
 
@@ -88,7 +89,7 @@ export default function TeamPanel({
         <div className={clsx('flex gap-1.5 flex-wrap', !isRadiant && 'justify-end')}>
           {pickSlots.map((hero, i) =>
             hero ? (
-              <HeroCard key={hero.id} hero={hero} size="md" lang={lang} />
+              <HeroCard key={hero.id} hero={hero} displayName={getHeroDisplayName(hero, lang)} size="md" lang={lang} />
             ) : (
               <EmptySlot key={i} type="pick" team={team} />
             )
@@ -104,7 +105,7 @@ export default function TeamPanel({
         <div className={clsx('flex gap-1 flex-wrap', !isRadiant && 'justify-end')}>
           {banSlots.map((hero, i) =>
             hero ? (
-              <HeroCard key={hero.id} hero={hero} size="sm" isBanned lang={lang} />
+              <HeroCard key={hero.id} hero={hero} displayName={getHeroDisplayName(hero, lang)} size="sm" isBanned lang={lang} />
             ) : (
               <EmptySlot key={i} type="ban" team={team} />
             )
