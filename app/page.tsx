@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useDraftStore } from '@/store/draftStore';
-import { Language, ls } from '@/lib/i18n';
+import { Language } from '@/lib/i18n';
 import { GameMode } from '@/lib/types';
 import Header from '@/components/Header';
 import TeamPanel from '@/components/TeamPanel';
 import PhaseIndicator from '@/components/PhaseIndicator';
 import HeroPool from '@/components/HeroPool';
 import Recommendations from '@/components/Recommendations';
+import DraftSummary from '@/components/DraftSummary';
 
 // Max bans and picks per mode
 const MODE_CONFIG = {
@@ -111,22 +112,14 @@ export default function DraftPage() {
           />
         )}
 
-        {/* Draft complete overlay */}
+        {/* Draft complete: full analysis panel */}
         {isComplete && (
-          <div className="bg-game-panel/90 border border-game-gold/40 rounded-lg p-4 text-center">
-            <h2 className="text-game-gold font-bold text-lg mb-1">
-              {ls(lang, '✓ 选人阶段完成', '✓ Utkast klart', '✓ Draft Complete')}
-            </h2>
-            <p className="text-gray-400 text-sm mb-3">
-              {ls(lang, '天辉与夜魇阵容已确定', 'Båda lagen har bekräftat sina uppställningar', 'Both teams have finalized their rosters')}
-            </p>
-            <button
-              onClick={resetDraft}
-              className="px-4 py-2 bg-game-gold text-black font-bold rounded hover:bg-game-gold-light transition-colors text-sm"
-            >
-              {ls(lang, '重新开始', 'Nytt utkast', 'New Draft')}
-            </button>
-          </div>
+          <DraftSummary
+            radiantPicks={radiantPicks}
+            direPicks={direPicks}
+            lang={lang}
+            onReset={resetDraft}
+          />
         )}
       </main>
     </div>
