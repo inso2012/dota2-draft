@@ -41,6 +41,8 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
     heroes,
     radiantPicks,
     direPicks,
+    radiantBans,
+    direBans,
     getBannedHeroIds,
     getPickedHeroIds,
     matchupCache,
@@ -58,6 +60,7 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
 
   const myPicks = activeTeam === 'radiant' ? radiantPicks : direPicks;
   const enemyPicks = activeTeam === 'radiant' ? direPicks : radiantPicks;
+  const allBannedHeroes = useMemo(() => [...radiantBans, ...direBans], [radiantBans, direBans]);
 
   // Pre-fetch matchup data:
   //   pick mode → need this hero's matchups vs enemies (fetched per-hero in pool)
@@ -79,16 +82,16 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
 
   const pickRecs = useMemo(
     () => currentAction === 'pick'
-      ? buildPickRecommendations(availableHeroes, myPicks, enemyPicks, matchupCache)
+      ? buildPickRecommendations(availableHeroes, myPicks, enemyPicks, allBannedHeroes, matchupCache)
       : [],
-    [currentAction, availableHeroes, myPicks, enemyPicks, matchupCache]
+    [currentAction, availableHeroes, myPicks, enemyPicks, allBannedHeroes, matchupCache]
   );
 
   const banRecs = useMemo(
     () => currentAction === 'ban'
-      ? buildBanRecommendations(availableHeroes, myPicks, matchupCache)
+      ? buildBanRecommendations(availableHeroes, myPicks, enemyPicks, matchupCache)
       : [],
-    [currentAction, availableHeroes, myPicks, matchupCache]
+    [currentAction, availableHeroes, myPicks, enemyPicks, matchupCache]
   );
 
   const teamName = activeTeam === 'radiant'
