@@ -5,6 +5,9 @@ import { Hero, GameMode, Team, DraftState } from '@/lib/types';
 import { Language } from '@/lib/i18n';
 import { getSequence } from '@/lib/draftEngine';
 
+export type SortBy = 'alpha' | 'pro_pick' | 'pro_ban' | 'pro_win' | 'pub_win';
+export type SortDir = 'desc' | 'asc';
+
 interface DraftStore extends DraftState {
   // UI state
   language: Language;
@@ -13,6 +16,8 @@ interface DraftStore extends DraftState {
   matchupCache: Record<number, { hero_id: number; games_played: number; wins: number }[]>;
   searchQuery: string;
   attrFilter: string;
+  sortBy: SortBy;
+  sortDir: SortDir;
 
   // Actions
   setLanguage: (lang: Language) => void;
@@ -24,6 +29,8 @@ interface DraftStore extends DraftState {
   setMatchupData: (heroId: number, data: { hero_id: number; games_played: number; wins: number }[]) => void;
   setSearchQuery: (q: string) => void;
   setAttrFilter: (attr: string) => void;
+  setSortBy: (s: SortBy) => void;
+  setSortDir: (d: SortDir) => void;
 
   // Derived
   getBannedHeroIds: () => Set<number>;
@@ -56,6 +63,8 @@ export const useDraftStore = create<DraftStore>((set, get) => ({
   matchupCache: {},
   searchQuery: '',
   attrFilter: 'all',
+  sortBy: 'alpha',
+  sortDir: 'desc',
 
   setLanguage: (lang) => set({ language: lang }),
 
@@ -125,6 +134,8 @@ export const useDraftStore = create<DraftStore>((set, get) => ({
 
   setSearchQuery: (q) => set({ searchQuery: q }),
   setAttrFilter: (attr) => set({ attrFilter: attr }),
+  setSortBy: (s) => set({ sortBy: s }),
+  setSortDir: (d) => set({ sortDir: d }),
 
   getBannedHeroIds: () => {
     const s = get();

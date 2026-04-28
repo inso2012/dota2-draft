@@ -3,8 +3,10 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Hero } from '@/lib/types';
 import { Language, createTranslator } from '@/lib/i18n';
-import { useDraftStore } from '@/store/draftStore';
+import { useDraftStore, SortBy, SortDir } from '@/store/draftStore';
 import { analyzePickHero, analyzeBanHero, PickAnalysis, BanAnalysis } from '@/lib/scoreEngine';
+import { getHeroDisplayName } from '@/lib/heroNames';
+import { calcProWinRate, calcPubWinRate } from '@/lib/opendota';
 import HeroCard from './HeroCard';
 import clsx from 'clsx';
 
@@ -282,6 +284,10 @@ export default function HeroPool({ lang }: HeroPoolProps) {
     matchupCache,
     setMatchupData,
     getActiveTeam,
+    sortBy,
+    sortDir,
+    setSortBy,
+    setSortDir,
   } = useDraftStore();
 
   const [hoveredHero, setHoveredHero] = useState<Hero | null>(null);
@@ -342,21 +348,30 @@ export default function HeroPool({ lang }: HeroPoolProps) {
       result = result.filter(
         (h) =>
           h.localized_name.toLowerCase().includes(q) ||
-          h.name.toLowerCase().includes(q)
+          h.name.toLowerCase().includes(q) ||
+          getHeroDisplayName(h, 'zh').includes(searchQuery)
       );
     }
     return result;
   }, [heroes, attrFilter, searchQuery]);
 
   const sortedHeroes = useMemo(() => {
+    // dir=1 → high-to-low (desc), dir=-1 → low-to-high (asc)
+    const dir = sortDir === 'desc' ? 1 : -1;
     return [...filteredHeroes].sort((a, b) => {
       const aUnavail = bannedIds.has(a.id) || pickedIds.has(a.id);
       const bUnavail = bannedIds.has(b.id) || pickedIds.has(b.id);
       if (aUnavail && !bUnavail) return 1;
       if (!aUnavail && bUnavail) return -1;
-      return a.localized_name.localeCompare(b.localized_name);
+
+      if (sortBy === 'alpha') return a.localized_name.localeCompare(b.localized_name);
+      if (sortBy === 'pro_pick') return dir * ((b.pro_pick ?? 0) - (a.pro_pick ?? 0));
+      if (sortBy === 'pro_ban')  return dir * ((b.pro_ban  ?? 0) - (a.pro_ban  ?? 0));
+      if (sortBy === 'pro_win')  return dir * (calcProWinRate(b) - calcProWinRate(a));
+      if (sortBy === 'pub_win')  return dir * (calcPubWinRate(b) - calcPubWinRate(a));
+      return 0;
     });
-  }, [filteredHeroes, bannedIds, pickedIds]);
+  }, [filteredHeroes, bannedIds, pickedIds, sortBy, sortDir]);
 
   if (!heroesLoaded) {
     return (
@@ -427,6 +442,30 @@ export default function HeroPool({ lang }: HeroPoolProps) {
               </button>
             ))}
           </div>
+
+          {/* Sort controls */}
+          <div className="flex gap-1 items-center">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortBy)}
+              className="flex-1 bg-gray-900 border border-gray-700 rounded px-1.5 py-1 text-[10px] text-gray-300 focus:outline-none focus:border-game-gold/50 transition-colors"
+            >
+              <option value="alpha">{lang === 'zh' ? '字母顺序' : 'Alphabetical'}</option>
+              <option value="pro_pick">{lang === 'zh' ? '职业出场率' : 'Pro Pick Rate'}</option>
+              <option value="pro_ban">{lang === 'zh' ? '职业禁用率' : 'Pro Ban Rate'}</option>
+              <option value="pro_win">{lang === 'zh' ? '职业胜率' : 'Pro Win Rate'}</option>
+              <option value="pub_win">{lang === 'zh' ? '公共胜率' : 'Pub Win Rate'}</option>
+            </select>
+            {sortBy !== 'alpha' && (
+              <button
+                onClick={() => setSortDir(sortDir === 'desc' ? 'asc' : 'desc')}
+                className="px-2 py-1 text-[10px] bg-gray-900 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-200 transition-colors whitespace-nowrap"
+                title={sortDir === 'desc' ? (lang === 'zh' ? '从高到低' : 'High → Low') : (lang === 'zh' ? '从低到高' : 'Low → High')}
+              >
+                {sortDir === 'desc' ? '↓' : '↑'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Hero grid */}
@@ -453,6 +492,7 @@ export default function HeroPool({ lang }: HeroPoolProps) {
                   >
                     <HeroCard
                       hero={hero}
+                      displayName={getHeroDisplayName(hero, lang)}
                       size="md"
                       isBanned={isBanned}
                       isPicked={isPicked}

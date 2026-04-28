@@ -7,6 +7,7 @@ import clsx from 'clsx';
 
 interface HeroCardProps {
   hero: Hero;
+  displayName?: string;
   size?: 'sm' | 'md' | 'lg';
   isBanned?: boolean;
   isPicked?: boolean;
@@ -33,6 +34,7 @@ const ATTR_ICON: Record<string, string> = {
 
 export default function HeroCard({
   hero,
+  displayName,
   size = 'md',
   isBanned = false,
   isPicked = false,
@@ -107,7 +109,7 @@ export default function HeroCard({
       {/* Hero name */}
       {size !== 'sm' && (
         <span className="mt-0.5 text-[9px] text-gray-300 text-center leading-tight max-w-full truncate px-0.5">
-          {hero.localized_name}
+          {displayName ?? hero.localized_name}
         </span>
       )}
 
