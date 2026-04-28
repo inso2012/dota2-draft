@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchAllHeroes } from '@/lib/opendota';
 
-export const runtime = 'edge';
-
 export async function GET() {
   try {
     const heroes = await fetchAllHeroes();

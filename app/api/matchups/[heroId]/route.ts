@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { fetchHeroMatchups } from '@/lib/opendota';
 
-export const runtime = 'edge';
-
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ heroId: string }> }
