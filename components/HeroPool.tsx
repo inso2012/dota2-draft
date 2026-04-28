@@ -65,6 +65,7 @@ function WinRateBar({ value, label }: { value: number; label: string }) {
 function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnalysis; lang: Language }) {
   const hasCounter = analysis.counterDataPoints > 0;
   const hasSynergy = analysis.synergyBonus > 0.005;
+  const hasBannedCounters = analysis.bannedCounterCount > 0;
 
   return (
     <div className="w-64 pointer-events-none">
@@ -90,7 +91,25 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
         {hasSynergy && (
           <WinRateBar value={0.5 + analysis.synergyBonus} label={ls(lang, '阵容协同', 'Synergi', 'Synergy')} />
         )}
+        {hasBannedCounters && (
+          <WinRateBar value={0.5 + analysis.bannedCounterBonus} label={ls(lang, '克制已封禁', 'Räknare bannade', 'Counters Banned')} />
+        )}
       </div>
+
+      {/* Banned counter safety note */}
+      {hasBannedCounters && (
+        <div className="flex items-center gap-1.5 mb-2 px-2 py-1 rounded bg-green-950/40 border border-green-900/40">
+          <span className="text-green-400 text-[10px]">🛡</span>
+          <span className="text-green-300 text-[10px]">
+            {ls(
+              lang,
+              `${analysis.bannedCounterCount} 个克制英雄已被封禁`,
+              `${analysis.bannedCounterCount} räknare bannade`,
+              `${analysis.bannedCounterCount} counter${analysis.bannedCounterCount > 1 ? 's' : ''} banned`,
+            )}
+          </span>
+        </div>
+      )}
 
       {/* Divider + combined */}
       <div className="border-t border-gray-700 pt-2">
@@ -121,11 +140,12 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
         <div className="flex flex-wrap gap-1 mt-2">
           {analysis.reasons.map((r) => {
             const labels: Record<string, Record<Language, string>> = {
-              high_wr: { zh: '📈 高胜率',  sv: '📈 Hög VF',      en: '📈 High WR'  },
-              meta:    { zh: '🔥 强势',    sv: '🔥 Meta',        en: '🔥 Meta'     },
-              counter: { zh: '⚔ 克制',    sv: '⚔ Motverkar',   en: '⚔ Counter'   },
-              synergy: { zh: '🤝 协同',    sv: '🤝 Synergi',     en: '🤝 Synergy'  },
-              flex:    { zh: '🔄 灵活',    sv: '🔄 Flexibel',    en: '🔄 Flex'     },
+              high_wr:   { zh: '📈 高胜率',  sv: '📈 Hög VF',      en: '📈 High WR'     },
+              meta:      { zh: '🔥 强势',    sv: '🔥 Meta',        en: '🔥 Meta'        },
+              counter:   { zh: '⚔ 克制',    sv: '⚔ Motverkar',   en: '⚔ Counter'      },
+              synergy:   { zh: '🤝 协同',    sv: '🤝 Synergi',     en: '🤝 Synergy'     },
+              flex:      { zh: '🔄 灵活',    sv: '🔄 Flexibel',    en: '🔄 Flex'        },
+              safe_pick: { zh: '🛡 安全',    sv: '🛡 Säker',       en: '🛡 Safe Pick'   },
             };
             return (
               <span key={r} className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-800 border border-gray-700 text-gray-300">
@@ -141,6 +161,7 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
 
 function BanTooltip({ hero, analysis, lang }: { hero: Hero; analysis: BanAnalysis; lang: Language }) {
   const hasTheatData = analysis.threatDataPoints > 0;
+  const hasEnemyFit = analysis.enemyRoleGapFill > 0;
 
   return (
     <div className="w-64 pointer-events-none">
@@ -164,6 +185,21 @@ function BanTooltip({ hero, analysis, lang }: { hero: Hero; analysis: BanAnalysi
           <WinRateBar value={analysis.threatScore} label={ls(lang, '对我方威胁', 'Hot mot oss', 'Threat to Us')} />
         )}
       </div>
+
+      {/* Enemy fit warning */}
+      {hasEnemyFit && (
+        <div className="flex items-center gap-1.5 mb-2 px-2 py-1 rounded bg-orange-950/40 border border-orange-900/40">
+          <span className="text-orange-400 text-[10px]">⚠</span>
+          <span className="text-orange-300 text-[10px]">
+            {ls(
+              lang,
+              `契合敌方阵容 (补全 ${analysis.enemyRoleGapFill} 个缺失职能)`,
+              `Passar fiendelaget (${analysis.enemyRoleGapFill} roll${analysis.enemyRoleGapFill > 1 ? 'er' : ''})`,
+              `Fits enemy lineup (fills ${analysis.enemyRoleGapFill} role gap${analysis.enemyRoleGapFill > 1 ? 's' : ''})`,
+            )}
+          </span>
+        </div>
+      )}
 
       {/* Divider + win rate if banned */}
       <div className="border-t border-gray-700 pt-2">
@@ -202,6 +238,7 @@ function HeroTooltip({
   currentAction,
   myPicks,
   enemyPicks,
+  allBannedHeroes,
   matchupCache,
   isFetching,
   lang,
@@ -211,17 +248,18 @@ function HeroTooltip({
   currentAction: 'ban' | 'pick';
   myPicks: Hero[];
   enemyPicks: Hero[];
+  allBannedHeroes: Hero[];
   matchupCache: Record<number, { hero_id: number; games_played: number; wins: number }[]>;
   isFetching: boolean;
   lang: Language;
 }) {
   const analysis = useMemo(() => {
     if (currentAction === 'pick') {
-      return analyzePickHero(hero, myPicks, enemyPicks, matchupCache);
+      return analyzePickHero(hero, myPicks, enemyPicks, allBannedHeroes, matchupCache);
     } else {
-      return analyzeBanHero(hero, myPicks, matchupCache);
+      return analyzeBanHero(hero, myPicks, enemyPicks, matchupCache);
     }
-  }, [hero, currentAction, myPicks, enemyPicks, matchupCache]);
+  }, [hero, currentAction, myPicks, enemyPicks, allBannedHeroes, matchupCache]);
 
   const TOOLTIP_WIDTH = 256;
   const TOOLTIP_HEIGHT = 200;
@@ -279,6 +317,8 @@ export default function HeroPool({ lang }: HeroPoolProps) {
     getPickedHeroIds,
     radiantPicks,
     direPicks,
+    radiantBans,
+    direBans,
     matchupCache,
     setMatchupData,
     getActiveTeam,
@@ -300,6 +340,7 @@ export default function HeroPool({ lang }: HeroPoolProps) {
 
   const myPicks = activeTeam === 'radiant' ? radiantPicks : direPicks;
   const enemyPicks = activeTeam === 'radiant' ? direPicks : radiantPicks;
+  const allBannedHeroes = useMemo(() => [...radiantBans, ...direBans], [radiantBans, direBans]);
 
   // Fetch matchup data for hovered hero + our picks (needed for ban analysis)
   useEffect(() => {
@@ -526,6 +567,7 @@ export default function HeroPool({ lang }: HeroPoolProps) {
           currentAction={currentAction}
           myPicks={myPicks}
           enemyPicks={enemyPicks}
+          allBannedHeroes={allBannedHeroes}
           matchupCache={matchupCache}
           isFetching={isFetching}
           lang={lang}
