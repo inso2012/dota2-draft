@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { Hero } from '@/lib/types';
-import { Language, createTranslator } from '@/lib/i18n';
+import { Language, createTranslator, ls } from '@/lib/i18n';
 import { useDraftStore, SortBy, SortDir } from '@/store/draftStore';
 import { analyzePickHero, analyzeBanHero, PickAnalysis, BanAnalysis } from '@/lib/scoreEngine';
 import { getHeroDisplayName } from '@/lib/heroNames';
@@ -30,10 +30,10 @@ const ATTR_COLOR: Record<string, string> = {
 };
 
 const PRIORITY_LABELS: Record<string, Record<Language, string>> = {
-  critical: { zh: '极高 ⚠', en: 'Critical ⚠' },
-  high:     { zh: '高',      en: 'High'       },
-  medium:   { zh: '中等',    en: 'Medium'     },
-  low:      { zh: '低',      en: 'Low'        },
+  critical: { zh: '极高 ⚠', sv: 'Kritisk ⚠', en: 'Critical ⚠' },
+  high:     { zh: '高',      sv: 'Hög',        en: 'High'       },
+  medium:   { zh: '中等',    sv: 'Medel',       en: 'Medium'     },
+  low:      { zh: '低',      sv: 'Låg',        en: 'Low'        },
 };
 const PRIORITY_COLOR: Record<string, string> = {
   critical: 'text-red-400',
@@ -63,7 +63,6 @@ function WinRateBar({ value, label }: { value: number; label: string }) {
 }
 
 function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnalysis; lang: Language }) {
-  const zh = lang === 'zh';
   const hasCounter = analysis.counterDataPoints > 0;
   const hasSynergy = analysis.synergyBonus > 0.005;
 
@@ -75,28 +74,28 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
         <img src={hero.icon_url} alt="" className="w-7 h-7 rounded object-cover" />
         <div>
           <div className="text-white font-semibold text-xs">{hero.localized_name}</div>
-          <div className="text-[9px] text-blue-400">{zh ? '选取分析' : 'Pick Analysis'}</div>
+          <div className="text-[9px] text-blue-400">{ls(lang, '选取分析', 'Pickanalys', 'Pick Analysis')}</div>
         </div>
       </div>
 
       {/* Win rates */}
       <div className="flex flex-col gap-1.5 mb-2">
         {analysis.proWinRate > 0 && (
-          <WinRateBar value={analysis.proWinRate} label={zh ? '职业胜率' : 'Pro WR'} />
+          <WinRateBar value={analysis.proWinRate} label={ls(lang, '职业胜率', 'Pro VF', 'Pro WR')} />
         )}
-        <WinRateBar value={analysis.pubWinRate} label={zh ? '公共胜率' : 'Pub WR'} />
+        <WinRateBar value={analysis.pubWinRate} label={ls(lang, '公共胜率', 'Pub VF', 'Pub WR')} />
         {hasCounter && (
-          <WinRateBar value={analysis.counterScore} label={zh ? '克制对方' : 'vs Enemy'} />
+          <WinRateBar value={analysis.counterScore} label={ls(lang, '克制对方', 'vs Fiende', 'vs Enemy')} />
         )}
         {hasSynergy && (
-          <WinRateBar value={0.5 + analysis.synergyBonus} label={zh ? '阵容协同' : 'Synergy'} />
+          <WinRateBar value={0.5 + analysis.synergyBonus} label={ls(lang, '阵容协同', 'Synergi', 'Synergy')} />
         )}
       </div>
 
       {/* Divider + combined */}
       <div className="border-t border-gray-700 pt-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-gray-400">{zh ? '加入阵容预计胜率' : 'Est. Lineup WR'}</span>
+          <span className="text-[10px] text-gray-400">{ls(lang, '加入阵容预计胜率', 'Uppsk. lag-VF', 'Est. Lineup WR')}</span>
           <span className={clsx(
             'text-sm font-bold',
             analysis.combinedWinRate >= 0.55 ? 'text-green-400' :
@@ -122,11 +121,11 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
         <div className="flex flex-wrap gap-1 mt-2">
           {analysis.reasons.map((r) => {
             const labels: Record<string, Record<Language, string>> = {
-              high_wr: { en: '📈 High WR', zh: '📈 高胜率' },
-              meta:    { en: '🔥 Meta', zh: '🔥 强势' },
-              counter: { en: '⚔ Counter', zh: '⚔ 克制' },
-              synergy: { en: '🤝 Synergy', zh: '🤝 协同' },
-              flex:    { en: '🔄 Flex', zh: '🔄 灵活' },
+              high_wr: { zh: '📈 高胜率',  sv: '📈 Hög VF',      en: '📈 High WR'  },
+              meta:    { zh: '🔥 强势',    sv: '🔥 Meta',        en: '🔥 Meta'     },
+              counter: { zh: '⚔ 克制',    sv: '⚔ Motverkar',   en: '⚔ Counter'   },
+              synergy: { zh: '🤝 协同',    sv: '🤝 Synergi',     en: '🤝 Synergy'  },
+              flex:    { zh: '🔄 灵活',    sv: '🔄 Flexibel',    en: '🔄 Flex'     },
             };
             return (
               <span key={r} className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-800 border border-gray-700 text-gray-300">
@@ -141,7 +140,6 @@ function PickTooltip({ hero, analysis, lang }: { hero: Hero; analysis: PickAnaly
 }
 
 function BanTooltip({ hero, analysis, lang }: { hero: Hero; analysis: BanAnalysis; lang: Language }) {
-  const zh = lang === 'zh';
   const hasTheatData = analysis.threatDataPoints > 0;
 
   return (
@@ -152,25 +150,25 @@ function BanTooltip({ hero, analysis, lang }: { hero: Hero; analysis: BanAnalysi
         <img src={hero.icon_url} alt="" className="w-7 h-7 rounded object-cover" />
         <div>
           <div className="text-white font-semibold text-xs">{hero.localized_name}</div>
-          <div className="text-[9px] text-red-400">{zh ? '禁用分析' : 'Ban Analysis'}</div>
+          <div className="text-[9px] text-red-400">{ls(lang, '禁用分析', 'Bannanalys', 'Ban Analysis')}</div>
         </div>
       </div>
 
       {/* Stats */}
       <div className="flex flex-col gap-1.5 mb-2">
-        <WinRateBar value={analysis.heroStrength} label={zh ? '英雄实力' : 'Hero Strength'} />
+        <WinRateBar value={analysis.heroStrength} label={ls(lang, '英雄实力', 'Hjältestyrka', 'Hero Strength')} />
         {analysis.proBanRate > 0 && (
-          <WinRateBar value={analysis.proBanRate} label={zh ? '职业Ban率' : 'Pro Ban Rate'} />
+          <WinRateBar value={analysis.proBanRate} label={ls(lang, '职业Ban率', 'Pro Bannfrekvens', 'Pro Ban Rate')} />
         )}
         {hasTheatData && (
-          <WinRateBar value={analysis.threatScore} label={zh ? '对我方威胁' : 'Threat to Us'} />
+          <WinRateBar value={analysis.threatScore} label={ls(lang, '对我方威胁', 'Hot mot oss', 'Threat to Us')} />
         )}
       </div>
 
       {/* Divider + win rate if banned */}
       <div className="border-t border-gray-700 pt-2">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-gray-400">{zh ? '禁掉后我方预计胜率' : 'Our WR if Banned'}</span>
+          <span className="text-[10px] text-gray-400">{ls(lang, '禁掉后我方预计胜率', 'Vår VF om bannad', 'Our WR if Banned')}</span>
           <span className={clsx(
             'text-sm font-bold',
             analysis.winRateIfBanned >= 0.55 ? 'text-green-400' :
@@ -189,7 +187,7 @@ function BanTooltip({ hero, analysis, lang }: { hero: Hero; analysis: BanAnalysi
 
       {/* Priority */}
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-700">
-        <span className="text-[10px] text-gray-400">{zh ? 'Ban 优先级' : 'Ban Priority'}</span>
+        <span className="text-[10px] text-gray-400">{ls(lang, 'Ban 优先级', 'Bannprioritet', 'Ban Priority')}</span>
         <span className={clsx('text-xs font-bold', PRIORITY_COLOR[analysis.banPriority])}>
           {PRIORITY_LABELS[analysis.banPriority][lang]}
         </span>
@@ -252,7 +250,7 @@ function HeroTooltip({
       {isFetching ? (
         <div className="flex items-center gap-2 text-gray-400 text-xs py-2">
           <div className="w-3 h-3 border border-gray-500 border-t-transparent rounded-full animate-spin" />
-          {lang === 'zh' ? '加载数据...' : 'Loading...'}
+          {ls(lang, '加载数据...', 'Laddar...', 'Loading...')}
         </div>
       ) : currentAction === 'pick' ? (
         <PickTooltip hero={hero} analysis={analysis as PickAnalysis} lang={lang} />
@@ -378,7 +376,7 @@ export default function HeroPool({ lang }: HeroPoolProps) {
       <div className="bg-game-panel/80 border border-game-border rounded-lg p-6 flex flex-col items-center justify-center gap-3">
         <div className="w-8 h-8 border-2 border-game-gold border-t-transparent rounded-full animate-spin" />
         <p className="text-gray-400 text-sm">
-          {lang === 'zh' ? '加载英雄数据...' : 'Loading heroes...'}
+          {ls(lang, '加载英雄数据...', 'Laddar hjältar...', 'Loading heroes...')}
         </p>
       </div>
     );
@@ -404,14 +402,14 @@ export default function HeroPool({ lang }: HeroPoolProps) {
                     ? 'text-red-400 border-red-900 bg-red-950/30'
                     : 'text-blue-400 border-blue-900 bg-blue-950/30',
                 )}>
-                  {lang === 'zh'
-                    ? (currentAction === 'ban' ? '禁用阶段' : '选取阶段')
-                    : (currentAction === 'ban' ? 'BAN PHASE' : 'PICK PHASE')}
+                  {currentAction === 'ban'
+                    ? ls(lang, '禁用阶段', 'BANNFAS', 'BAN PHASE')
+                    : ls(lang, '选取阶段', 'VÄLJARFAS', 'PICK PHASE')}
                 </span>
               )}
               <span className="text-[10px] text-gray-500">
                 {sortedHeroes.filter((h) => !bannedIds.has(h.id) && !pickedIds.has(h.id)).length}
-                {lang === 'zh' ? ' 可选' : ' avail'}
+                {ls(lang, ' 可选', ' tillg.', ' avail')}
               </span>
             </div>
           </div>
@@ -450,17 +448,17 @@ export default function HeroPool({ lang }: HeroPoolProps) {
               onChange={(e) => setSortBy(e.target.value as SortBy)}
               className="flex-1 bg-gray-900 border border-gray-700 rounded px-1.5 py-1 text-[10px] text-gray-300 focus:outline-none focus:border-game-gold/50 transition-colors"
             >
-              <option value="alpha">{lang === 'zh' ? '字母顺序' : 'Alphabetical'}</option>
-              <option value="pro_pick">{lang === 'zh' ? '职业出场率' : 'Pro Pick Rate'}</option>
-              <option value="pro_ban">{lang === 'zh' ? '职业禁用率' : 'Pro Ban Rate'}</option>
-              <option value="pro_win">{lang === 'zh' ? '职业胜率' : 'Pro Win Rate'}</option>
-              <option value="pub_win">{lang === 'zh' ? '公共胜率' : 'Pub Win Rate'}</option>
+              <option value="alpha">{ls(lang, '字母顺序', 'Alfabetisk', 'Alphabetical')}</option>
+              <option value="pro_pick">{ls(lang, '职业出场率', 'Pro val', 'Pro Pick Rate')}</option>
+              <option value="pro_ban">{ls(lang, '职业禁用率', 'Pro bann', 'Pro Ban Rate')}</option>
+              <option value="pro_win">{ls(lang, '职业胜率', 'Pro vinstfrekvens', 'Pro Win Rate')}</option>
+              <option value="pub_win">{ls(lang, '公共胜率', 'Pub vinstfrekvens', 'Pub Win Rate')}</option>
             </select>
             {sortBy !== 'alpha' && (
               <button
                 onClick={() => setSortDir(sortDir === 'desc' ? 'asc' : 'desc')}
                 className="px-2 py-1 text-[10px] bg-gray-900 border border-gray-700 rounded text-gray-400 hover:border-gray-500 hover:text-gray-200 transition-colors whitespace-nowrap"
-                title={sortDir === 'desc' ? (lang === 'zh' ? '从高到低' : 'High → Low') : (lang === 'zh' ? '从低到高' : 'Low → High')}
+                title={sortDir === 'desc' ? ls(lang, '从高到低', 'Högt → Lågt', 'High → Low') : ls(lang, '从低到高', 'Lågt → Högt', 'Low → High')}
               >
                 {sortDir === 'desc' ? '↓' : '↑'}
               </button>
@@ -472,7 +470,7 @@ export default function HeroPool({ lang }: HeroPoolProps) {
         <div className="p-2 overflow-y-auto" style={{ maxHeight: '420px' }}>
           {sortedHeroes.length === 0 ? (
             <div className="text-center text-gray-600 py-8 text-sm">
-              {lang === 'zh' ? '未找到英雄' : 'No heroes found'}
+              {ls(lang, '未找到英雄', 'Inga hjältar hittades', 'No heroes found')}
             </div>
           ) : (
             <div
@@ -512,6 +510,8 @@ export default function HeroPool({ lang }: HeroPoolProps) {
             <p className={clsx('text-[10px] text-center', actionColor)}>
               {lang === 'zh'
                 ? `悬停查看${currentAction === 'ban' ? '禁用' : '选取'}分析 · 点击确认`
+                : lang === 'sv'
+                ? `Hovra för analys · Klicka för att ${currentAction === 'ban' ? 'banna' : 'välja'}`
                 : `Hover to analyze · Click to ${currentAction}`}
             </p>
           </div>

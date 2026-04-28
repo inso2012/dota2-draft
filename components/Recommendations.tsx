@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { Hero, Team } from '@/lib/types';
-import { Language } from '@/lib/i18n';
+import { Language, ls } from '@/lib/i18n';
 import { buildPickRecommendations, buildBanRecommendations } from '@/lib/scoreEngine';
 import { useDraftStore } from '@/store/draftStore';
 import HeroCard from './HeroCard';
@@ -21,10 +21,10 @@ const PRIORITY_COLOR: Record<string, string> = {
   low:      'text-gray-500 border-gray-800 bg-transparent',
 };
 const PRIORITY_LABEL: Record<string, Record<Language, string>> = {
-  critical: { zh: '极高', en: 'Critical' },
-  high:     { zh: '高',   en: 'High'     },
-  medium:   { zh: '中',   en: 'Med'      },
-  low:      { zh: '低',   en: 'Low'      },
+  critical: { zh: '极高', sv: 'Kritisk', en: 'Critical' },
+  high:     { zh: '高',   sv: 'Hög',     en: 'High'     },
+  medium:   { zh: '中',   sv: 'Med',     en: 'Med'      },
+  low:      { zh: '低',   sv: 'Låg',     en: 'Low'      },
 };
 
 function WRBadge({ value, label }: { value: number; label: string }) {
@@ -37,7 +37,6 @@ function WRBadge({ value, label }: { value: number; label: string }) {
 }
 
 export default function Recommendations({ lang, activeTeam, currentAction }: RecommendationsProps) {
-  const zh = lang === 'zh';
   const {
     heroes,
     radiantPicks,
@@ -93,15 +92,15 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
   );
 
   const teamName = activeTeam === 'radiant'
-    ? (zh ? '天辉' : 'Radiant')
-    : (zh ? '夜魇' : 'Dire');
+    ? ls(lang, '天辉', 'Radiant', 'Radiant')
+    : ls(lang, '夜魇', 'Dire', 'Dire');
 
   const teamColor = activeTeam === 'radiant' ? 'text-radiant-glow' : 'text-dire-glow';
   const teamBorder = activeTeam === 'radiant' ? 'border-radiant/30' : 'border-dire/30';
   const actionColor = currentAction === 'ban' ? 'text-red-400' : 'text-blue-400';
   const actionLabel = currentAction === 'ban'
-    ? (zh ? '禁用推荐' : 'Ban Suggestions')
-    : (zh ? '选取推荐' : 'Pick Suggestions');
+    ? ls(lang, '禁用推荐', 'Bannförslag', 'Ban Suggestions')
+    : ls(lang, '选取推荐', 'Pickförslag', 'Pick Suggestions');
 
   return (
     <div className={clsx('bg-game-panel/80 border rounded-lg p-3 flex flex-col gap-2', teamBorder)}>
@@ -109,7 +108,7 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-game-gold font-bold text-sm tracking-wider uppercase">
-            {zh ? '推荐' : 'Suggestions'}
+            {ls(lang, '推荐', 'Förslag', 'Suggestions')}
           </h3>
           <span className={clsx('text-[10px] font-semibold', teamColor)}>
             {teamName}
@@ -124,10 +123,10 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
         </div>
         <div className="text-[10px] text-gray-600">
           {currentAction === 'pick' && enemyPicks.length > 0
-            ? (zh ? `对 ${enemyPicks.length} 个敌方英雄` : `vs ${enemyPicks.length} enemy`)
+            ? ls(lang, `对 ${enemyPicks.length} 个敌方英雄`, `mot ${enemyPicks.length} fiender`, `vs ${enemyPicks.length} enemy`)
             : currentAction === 'ban' && myPicks.length > 0
-            ? (zh ? `基于 ${myPicks.length} 个己方英雄` : `based on ${myPicks.length} allies`)
-            : (zh ? '基于整体强度' : 'by overall strength')}
+            ? ls(lang, `基于 ${myPicks.length} 个己方英雄`, `baserat på ${myPicks.length} allierade`, `based on ${myPicks.length} allies`)
+            : ls(lang, '基于整体强度', 'efter total styrka', 'by overall strength')}
         </div>
       </div>
 
@@ -146,11 +145,11 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
                 <div className="text-xs font-semibold text-gray-200 truncate">{hero.localized_name}</div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   {analysis.proWinRate > 0 && (
-                    <WRBadge value={analysis.proWinRate} label={zh ? '职业' : 'Pro'} />
+                    <WRBadge value={analysis.proWinRate} label={ls(lang, '职业', 'Pro', 'Pro')} />
                   )}
-                  <WRBadge value={analysis.pubWinRate} label={zh ? '公共' : 'Pub'} />
+                  <WRBadge value={analysis.pubWinRate} label={ls(lang, '公共', 'Pub', 'Pub')} />
                   {analysis.counterDataPoints > 0 && (
-                    <WRBadge value={analysis.counterScore} label={zh ? '克制' : 'Ctr'} />
+                    <WRBadge value={analysis.counterScore} label={ls(lang, '克制', 'Mot', 'Ctr')} />
                   )}
                 </div>
               </div>
@@ -163,7 +162,7 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
                 )}>
                   {(analysis.combinedWinRate * 100).toFixed(1)}%
                 </div>
-                <div className="text-[9px] text-gray-600">{zh ? '预计' : 'est.'}</div>
+                <div className="text-[9px] text-gray-600">{ls(lang, '预计', 'uppsk.', 'est.')}</div>
               </div>
             </div>
           ))}
@@ -184,12 +183,12 @@ export default function Recommendations({ lang, activeTeam, currentAction }: Rec
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-semibold text-gray-200 truncate">{hero.localized_name}</div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <WRBadge value={analysis.heroStrength} label={zh ? '实力' : 'Str'} />
+                  <WRBadge value={analysis.heroStrength} label={ls(lang, '实力', 'Styr', 'Str')} />
                   {analysis.proBanRate > 0 && (
-                    <WRBadge value={analysis.proBanRate} label={zh ? 'Ban率' : 'Ban'} />
+                    <WRBadge value={analysis.proBanRate} label={ls(lang, 'Ban率', 'Bann', 'Ban')} />
                   )}
                   {analysis.threatDataPoints > 0 && (
-                    <WRBadge value={analysis.threatScore} label={zh ? '威胁' : 'Thr'} />
+                    <WRBadge value={analysis.threatScore} label={ls(lang, '威胁', 'Hot', 'Thr')} />
                   )}
                 </div>
               </div>

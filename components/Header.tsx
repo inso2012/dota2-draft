@@ -7,10 +7,13 @@ import clsx from 'clsx';
 
 interface HeaderProps {
   lang: Language;
-  onLangToggle: () => void;
+  onLangChange: (lang: Language) => void;
 }
 
-export default function Header({ lang, onLangToggle }: HeaderProps) {
+const LANG_FLAGS: Record<Language, string> = { zh: '🇨🇳', en: '🇬🇧', sv: '🇸🇪' };
+const LANG_LABELS: Record<Language, string> = { zh: '中', en: 'EN', sv: 'SE' };
+
+export default function Header({ lang, onLangChange }: HeaderProps) {
   const { mode, setMode, resetDraft } = useDraftStore();
   const tr = createTranslator(lang);
 
@@ -54,14 +57,24 @@ export default function Header({ lang, onLangToggle }: HeaderProps) {
           ))}
         </div>
 
-        {/* Language toggle */}
-        <button
-          onClick={onLangToggle}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-gray-700 bg-gray-900 hover:border-game-gold/50 text-xs text-gray-300 hover:text-game-gold transition-colors"
-        >
-          <span className="text-base">{lang === 'zh' ? '🇨🇳' : '🇬🇧'}</span>
-          <span className="font-medium">{lang === 'zh' ? 'EN' : '中'}</span>
-        </button>
+        {/* Language selector */}
+        <div className="flex items-center bg-gray-900 rounded border border-gray-700 p-0.5 gap-0.5">
+          {(['zh', 'en', 'sv'] as Language[]).map((l) => (
+            <button
+              key={l}
+              onClick={() => onLangChange(l)}
+              className={clsx(
+                'flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-all',
+                lang === l
+                  ? 'bg-game-gold text-black font-bold'
+                  : 'text-gray-400 hover:text-gray-200',
+              )}
+            >
+              <span>{LANG_FLAGS[l]}</span>
+              <span>{LANG_LABELS[l]}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </header>
   );

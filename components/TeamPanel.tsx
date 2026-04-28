@@ -1,7 +1,7 @@
 'use client';
 
 import { Hero, Team } from '@/lib/types';
-import { Language, createTranslator } from '@/lib/i18n';
+import { Language, createTranslator, ls } from '@/lib/i18n';
 import HeroCard from './HeroCard';
 import clsx from 'clsx';
 
@@ -75,7 +75,7 @@ export default function TeamPanel({
         </h2>
         {isActive && (
           <span className="text-[10px] text-game-gold border border-game-gold/50 rounded px-1 py-0.5 animate-pulse">
-            {lang === 'zh' ? '当前操作' : 'ACTIVE'}
+            {ls(lang, '当前操作', 'AKTIV', 'ACTIVE')}
           </span>
         )}
       </div>

@@ -1,4 +1,9 @@
-export type Language = 'en' | 'zh';
+export type Language = 'en' | 'zh' | 'sv';
+
+/** Inline 3-way language string helper */
+export function ls(lang: Language, zh: string, sv: string, en: string): string {
+  return lang === 'zh' ? zh : lang === 'sv' ? sv : en;
+}
 
 const translations = {
   en: {
@@ -99,12 +104,62 @@ const translations = {
     'bans.label': '禁用',
     'picks.label': '已选',
   },
+  sv: {
+    // App
+    'app.title': 'Dota 2 Utkasthjälp',
+    'app.subtitle': 'Pick & Ban-optimerare',
+    // Mode
+    'mode.label': 'Spelläge',
+    'mode.captains': 'Kaptenläge',
+    'mode.allpick': 'Alla hjältar',
+    // Teams
+    'team.radiant': 'Radiant',
+    'team.dire': 'Dire',
+    // Actions
+    'action.ban': 'Banna',
+    'action.pick': 'Välja',
+    'action.undo': 'Ångra',
+    'action.reset': 'Återställ utkast',
+    // Phase
+    'phase.label': 'Fas',
+    'phase.current': 'Aktuellt drag',
+    'phase.complete': 'Utkast klart',
+    // Hero pool
+    'pool.title': 'Hjältepool',
+    'pool.search': 'Sök hjältar...',
+    'pool.filter.all': 'Alla',
+    'pool.filter.str': 'Styrka',
+    'pool.filter.agi': 'Smidighet',
+    'pool.filter.int': 'Intelligens',
+    'pool.filter.all_attr': 'Universell',
+    // Recommendations
+    'rec.title': 'Förslag',
+    'rec.subtitle': 'För aktuell picktur',
+    'rec.winrate': 'Vinstfrekvens',
+    'rec.pro_wr': 'Pro VF',
+    'rec.counter': 'Motpoäng',
+    'rec.reason.high_wr': 'Hög pro-vinstfrekvens',
+    'rec.reason.counter': 'Motverkar fiendelaget',
+    'rec.reason.synergy': 'Synergi med ditt lag',
+    'rec.reason.meta': 'Stark metapick',
+    'rec.reason.flex': 'Flexibel roll',
+    // Status
+    'status.banned': 'BANNAD',
+    'status.picked': 'VALD',
+    // Stats
+    'stats.pro_pick': 'Pro val',
+    'stats.pro_ban': 'Pro bann',
+    // Bans
+    'bans.label': 'Banningar',
+    'picks.label': 'Val',
+  },
 } as const;
 
 type TranslationKey = keyof typeof translations.en;
 
 export function t(key: TranslationKey, lang: Language): string {
-  return translations[lang][key] ?? translations.en[key] ?? key;
+  const langMap = translations[lang] as Record<string, string> | undefined;
+  return langMap?.[key] ?? translations.en[key] ?? key;
 }
 
 export function createTranslator(lang: Language) {

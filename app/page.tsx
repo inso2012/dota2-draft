@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useDraftStore } from '@/store/draftStore';
-import { Language } from '@/lib/i18n';
+import { Language, ls } from '@/lib/i18n';
 import { GameMode } from '@/lib/types';
 import Header from '@/components/Header';
 import TeamPanel from '@/components/TeamPanel';
@@ -45,9 +45,7 @@ export default function DraftPage() {
       .catch((err) => console.error('Failed to load heroes:', err));
   }, [setHeroes]);
 
-  const toggleLang = useCallback(() => {
-    setLang((prev) => (prev === 'zh' ? 'en' : 'zh'));
-  }, []);
+  const handleLangChange = useCallback((l: Language) => setLang(l), []);
 
   const currentStepData = getCurrentStep();
   const activeTeam = getActiveTeam();
@@ -56,7 +54,7 @@ export default function DraftPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header lang={lang} onLangToggle={toggleLang} />
+      <Header lang={lang} onLangChange={handleLangChange} />
 
       <main className="flex-1 max-w-screen-2xl mx-auto w-full px-3 py-3 flex flex-col gap-3">
         {/* Phase indicator */}
@@ -117,16 +115,16 @@ export default function DraftPage() {
         {isComplete && (
           <div className="bg-game-panel/90 border border-game-gold/40 rounded-lg p-4 text-center">
             <h2 className="text-game-gold font-bold text-lg mb-1">
-              {lang === 'zh' ? '✓ 选人阶段完成' : '✓ Draft Complete'}
+              {ls(lang, '✓ 选人阶段完成', '✓ Utkast klart', '✓ Draft Complete')}
             </h2>
             <p className="text-gray-400 text-sm mb-3">
-              {lang === 'zh' ? '天辉与夜魇阵容已确定' : 'Both teams have finalized their rosters'}
+              {ls(lang, '天辉与夜魇阵容已确定', 'Båda lagen har bekräftat sina uppställningar', 'Both teams have finalized their rosters')}
             </p>
             <button
               onClick={resetDraft}
               className="px-4 py-2 bg-game-gold text-black font-bold rounded hover:bg-game-gold-light transition-colors text-sm"
             >
-              {lang === 'zh' ? '重新开始' : 'New Draft'}
+              {ls(lang, '重新开始', 'Nytt utkast', 'New Draft')}
             </button>
           </div>
         )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { DraftStep, GameMode } from '@/lib/types';
-import { Language } from '@/lib/i18n';
+import { Language, ls } from '@/lib/i18n';
 import { CAPTAINS_MODE_SEQUENCE, ALL_PICK_SEQUENCE } from '@/lib/draftEngine';
 import clsx from 'clsx';
 
@@ -28,9 +28,7 @@ export default function PhaseIndicator({
   const progress = sequence.length > 0 ? (currentStep / sequence.length) * 100 : 0;
 
   const stepLabel = currentStepData
-    ? lang === 'zh'
-      ? `${currentStepData.team === 'radiant' ? '天辉' : '夜魇'} ${currentStepData.action === 'ban' ? '禁用' : '选取'}`
-      : `${currentStepData.team === 'radiant' ? 'Radiant' : 'Dire'} ${currentStepData.action === 'ban' ? 'BAN' : 'PICK'}`
+    ? `${ls(lang, currentStepData.team === 'radiant' ? '天辉' : '夜魇', currentStepData.team === 'radiant' ? 'Radiant' : 'Dire', currentStepData.team === 'radiant' ? 'Radiant' : 'Dire')} ${ls(lang, currentStepData.action === 'ban' ? '禁用' : '选取', currentStepData.action === 'ban' ? 'BANN' : 'PICK', currentStepData.action === 'ban' ? 'BAN' : 'PICK')}`
     : '';
 
   const phaseNum = currentStepData?.phase ?? 0;
@@ -42,7 +40,7 @@ export default function PhaseIndicator({
         <div className="flex items-center gap-2">
           {isComplete ? (
             <span className="text-game-gold font-bold text-sm">
-              {lang === 'zh' ? '✓ 选人完成' : '✓ Draft Complete'}
+              {ls(lang, '✓ 选人完成', '✓ Utkast klart', '✓ Draft Complete')}
             </span>
           ) : (
             <>
@@ -55,8 +53,8 @@ export default function PhaseIndicator({
                 )}
               >
                 {currentStepData?.action === 'ban'
-                  ? lang === 'zh' ? '禁用' : 'BAN'
-                  : lang === 'zh' ? '选取' : 'PICK'}
+                  ? ls(lang, '禁用', 'BANN', 'BAN')
+                  : ls(lang, '选取', 'PICK', 'PICK')}
               </span>
               <span
                 className={clsx(
@@ -67,7 +65,7 @@ export default function PhaseIndicator({
                 {stepLabel}
               </span>
               <span className="text-gray-500 text-xs">
-                {lang === 'zh' ? `第${phaseNum}阶段` : `Phase ${phaseNum}`}
+                {ls(lang, `第${phaseNum}阶段`, `Fas ${phaseNum}`, `Phase ${phaseNum}`)}
               </span>
             </>
           )}
@@ -79,13 +77,13 @@ export default function PhaseIndicator({
             disabled={currentStep === 0}
             className="px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-gray-300 transition-colors"
           >
-            {lang === 'zh' ? '撤销' : 'Undo'}
+            {ls(lang, '撤销', 'Ångra', 'Undo')}
           </button>
           <button
             onClick={onReset}
             className="px-2 py-1 text-xs bg-gray-800 hover:bg-red-900/50 rounded border border-gray-700 hover:border-red-800 text-gray-300 hover:text-red-300 transition-colors"
           >
-            {lang === 'zh' ? '重置' : 'Reset'}
+            {ls(lang, '重置', 'Återst.', 'Reset')}
           </button>
         </div>
       </div>
@@ -101,12 +99,12 @@ export default function PhaseIndicator({
       {/* Step counter */}
       <div className="flex items-center justify-between text-[10px] text-gray-500">
         <span>
-          {lang === 'zh' ? `步骤 ${currentStep}/${sequence.length}` : `Step ${currentStep}/${sequence.length}`}
+          {ls(lang, `步骤 ${currentStep}/${sequence.length}`, `Steg ${currentStep}/${sequence.length}`, `Step ${currentStep}/${sequence.length}`)}
         </span>
         <span className="uppercase tracking-wider">
           {mode === 'captains'
-            ? lang === 'zh' ? '队长模式' : 'Captains Mode'
-            : lang === 'zh' ? '全英雄选择' : 'All Pick'}
+            ? ls(lang, '队长模式', 'Kaptenläge', 'Captains Mode')
+            : ls(lang, '全英雄选择', 'Alla hjältar', 'All Pick')}
         </span>
       </div>
     </div>
