@@ -5,9 +5,10 @@ export const runtime = 'edge';
 
 export async function GET(
   _req: Request,
-  { params }: { params: { heroId: string } }
+  { params }: { params: Promise<{ heroId: string }> }
 ) {
-  const heroId = parseInt(params.heroId, 10);
+  const { heroId: heroIdStr } = await params;
+  const heroId = parseInt(heroIdStr, 10);
   if (isNaN(heroId)) {
     return NextResponse.json({ error: 'Invalid hero ID' }, { status: 400 });
   }
